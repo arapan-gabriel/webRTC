@@ -169,7 +169,8 @@ const Room = (props) => {
   }, []);
 
   const connectStream = (videoConstraints) => {
-    socketRef.current = io.connect("http://localhost:8000");
+    socketRef.current = io.connect("https://webrtc-node1.herokuapp.com");
+    // socketRef.current = io.connect("http://localhost:8000");
     // navigator.mediaDevices.getUserMedia({ video: {deviceId: { exact: '' }}, audio: true })
     //   .then(stream => {    
     navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true })

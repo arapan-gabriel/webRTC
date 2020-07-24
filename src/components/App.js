@@ -7,13 +7,6 @@ import Grid from '@material-ui/core/Grid';
 import CreateRoom from './CreateRoom';
 import Room from './Room';
 
-// import io from'socket.io-client';
-// const socket = io.connect('http://localhost:4444');
-// socket.emit('joinRoom', '1')
-// socket.on('joinExpert', res => console.log(`expert - ${res}`));
-// socket.on('success', res => console.log(`success - ${res}`));
-// socket.on('err', res => console.log(`err - ${res}`));
-
 const useStyles = makeStyles((theme) => ({
   root: {
     flexGrow: 1,
