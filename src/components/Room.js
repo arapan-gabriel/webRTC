@@ -165,7 +165,7 @@ const Room = (props) => {
     //         item.peer.signal(payload.signal);
     //     });
     //   });
-    connectStream(videoConstraints);
+    // connectStream(videoConstraints);
   }, []);
 
   const connectStream = (videoConstraints) => {
