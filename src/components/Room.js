@@ -1,12 +1,14 @@
 import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 import Peer from "simple-peer";
-import { makeStyles } from '@material-ui/core/styles';
+
+import CustomVideo from './CustomVideo';
+import Switch from '@material-ui/core/Switch';
 import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
+import { makeStyles } from '@material-ui/core/styles';
 import FormControl from '@material-ui/core/FormControl';
-import Switch from '@material-ui/core/Switch';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -19,39 +21,11 @@ const useStyles = makeStyles((theme) => ({
     height: '50%',
     width: '100%',
   },
-  styledVideo: {
-    height: '15%',
-    width: '33%'
-  },
   selectFormControl: {
     margin: theme.spacing(1),
     minWidth: 210,
   }
 }));
-
-const CustomVideo = (props) => {
-  const [showVideo, setShowVideo] = useState(true);
-  const ref = useRef();
-  useEffect(() => {
-    props.peer.on("stream", stream => {
-    ref.current.srcObject = stream;
-    })
-  }, []);
-  const classes = useStyles();
-  return (
-    showVideo &&
-      <video
-        className={classes.styledVideo}
-        playsInline
-        autoPlay
-        ref={ref}
-        controls
-        muted
-        id={props.peer._id}
-        onSuspend={() => setShowVideo(false)}
-      />
-  );
-}
 
 const CustomSelect = (props) => {
   const classes = useStyles();
@@ -211,7 +185,7 @@ const Room = (props) => {
       });
   }
 
-  const createPeer= (userToSignal, callerID, stream) => {
+  const createPeer = (userToSignal, callerID, stream) => {
     const peer = new Peer({
         initiator: true,
         trickle: false,
@@ -295,7 +269,7 @@ const Room = (props) => {
           color="primary"
           name="checkedB"
           inputProps={{ 'aria-label': 'primary checkbox' }}
-        />
+        /><br />
         <CustomSelect
           devices={videoInputDevices}
           inputLabelText={videoInputLabelText}
