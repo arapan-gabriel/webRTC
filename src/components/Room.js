@@ -261,8 +261,7 @@ const Room = (props) => {
       width: window.innerWidth / 2
     };
     if(event.target.checked){
-      videoConstraints.facingMode = 'environment';
-      // videoConstraints.facingMode = {exact: 'environment'};
+      videoConstraints.facingMode = {exact: 'environment'};
     } else {
       videoConstraints.facingMode = 'user';
     }
