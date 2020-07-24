@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "webpack-dev-server --mode development --open --hot",
-    "start:server": "node ./http.js",
+    "dev": "webpack-dev-server --mode development --open --hot",
+    "start": "node ./http.js",
     "build": "webpack --mode production"
   },
   "keywords": [],
