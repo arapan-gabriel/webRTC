@@ -6,6 +6,7 @@ import Select from '@material-ui/core/Select';
 import MenuItem from '@material-ui/core/MenuItem';
 import InputLabel from '@material-ui/core/InputLabel';
 import FormControl from '@material-ui/core/FormControl';
+import Switch from '@material-ui/core/Switch';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -93,7 +94,8 @@ const Room = (props) => {
   const [videoInputDevices, setVideoInputDevices] = useState([]);
   const [audioInputDevices, setAudioInputDevices] = useState([]);
   const [audioOutputDevices, setAudioOutputDevices] = useState([]);
-  const [deviceId, setDeviceId] = useState();
+  const [checkeFront, setCheckeFront] = useState(true);
+  const [checkeRear, setCheckeRear] = useState(false);
   const [selectedDevices, setSelectedDevices] = useState({
     videoInputDevice: '',
     audioInputDevice: '',
@@ -124,7 +126,6 @@ const Room = (props) => {
           setVideoInputDevices(videoDevices);
           setAudioInputDevices(audioInDevices);
           setAudioOutputDevices(audioOutDevices);
-          setDeviceId(videoDevices[0].deviceId);
         })
         .catch(err => {
           console.log(err.name + ": " + err.message);
@@ -245,7 +246,6 @@ const Room = (props) => {
 
   const handleChangeSelectVideoIn = (e) => {
     setSelectedDevices({ ...selectedDevices, videoInputDevice: e.target.value });
-    setDeviceId(e.target.value);
     videoConstraints.deviceId = { exact: e.target.value}
     connectStream(videoConstraints);
   };
@@ -254,6 +254,22 @@ const Room = (props) => {
   };
   const handleChangeSelectAudioOut = (e) => {
     setSelectedDevices({ ...selectedDevices, audioOutputDevice: e.target.value });
+  };
+  const handleChangeSwitch = (event) => {
+    const videoConstraints = {
+      height: window.innerHeight / 2,
+      width: window.innerWidth / 2
+    };
+    if(event.target.checked){
+      videoConstraints.facingMode = 'environment';
+      // videoConstraints.facingMode = {exact: 'environment'};
+    } else {
+      videoConstraints.facingMode = 'user';
+    }
+    
+    setCheckeFront(!event.target.checked);
+    setCheckeRear(event.target.checked);
+    connectStream(videoConstraints)
   };
   return (
     <div className={classes.container}>
@@ -272,24 +288,34 @@ const Room = (props) => {
           );
         })
       }
-      <CustomSelect
-        devices={videoInputDevices}
-        inputLabelText={videoInputLabelText}
-        selectedDevice={selectedDevices.videoInputDevice}
-        handleChange={handleChangeSelectVideoIn}
-      /><br />
-      <CustomSelect
-        devices={audioInputDevices}
-        inputLabelText={audioInputLabelText}
-        selectedDevice={selectedDevices.audioInputDevice}
-        handleChange={handleChangeSelectAudioIn}
-      /><br />
-      <CustomSelect
-        devices={audioOutputDevices}
-        inputLabelText={audioOutputLabelText}
-        selectedDevice={selectedDevices.audioOutputDevice}
-        handleChange={handleChangeSelectAudioOut}
-      /><br />
+      <div>
+        <label>Switch camera for phone</label>
+        <Switch
+          checked={checkeRear}
+          onChange={handleChangeSwitch}
+          color="primary"
+          name="checkedB"
+          inputProps={{ 'aria-label': 'primary checkbox' }}
+        />
+        <CustomSelect
+          devices={videoInputDevices}
+          inputLabelText={videoInputLabelText}
+          selectedDevice={selectedDevices.videoInputDevice}
+          handleChange={handleChangeSelectVideoIn}
+          /><br />
+        <CustomSelect
+          devices={audioInputDevices}
+          inputLabelText={audioInputLabelText}
+          selectedDevice={selectedDevices.audioInputDevice}
+          handleChange={handleChangeSelectAudioIn}
+          /><br />
+        <CustomSelect
+          devices={audioOutputDevices}
+          inputLabelText={audioOutputLabelText}
+          selectedDevice={selectedDevices.audioOutputDevice}
+          handleChange={handleChangeSelectAudioOut}
+          />
+        </div>
     </div>
   );
 };
