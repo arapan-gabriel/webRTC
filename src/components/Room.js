@@ -105,29 +105,32 @@ const Room = (props) => {
   const roomID = props.match.params.roomID;
 
   useEffect(() => {
-    navigator.mediaDevices.enumerateDevices()
-    .then(devices => {
-      const videoDevices = devices.filter(device => device.kind === 'videoinput');
-      const audioInDevices = devices.filter(device => device.kind === 'audioinput');
-      const audioOutDevices = devices.filter(device => device.kind === 'audiooutput');
-      if (!videoDevices.length) {
-        setVideoInputLabelText('No video devices')
-      }
-      if (!audioInDevices.length) {
-        setAudioInputLabelText('No input audio devices')
-      }
-      if (!audioOutDevices.length) {
-        setAudioOutputLabelText('No output audio devices')
-      }
-      setVideoInputDevices(videoDevices);
-      setAudioInputDevices(audioInDevices);
-      setAudioOutputDevices(audioOutDevices);
-      setDeviceId(videoDevices[0].deviceId);
-    })
-    .catch(err => {
-      console.log(err.name + ": " + err.message);
-    });
-
+    navigator.mediaDevices.getUserMedia({audio: true, video: true})
+      .then(() => {
+        navigator.mediaDevices.enumerateDevices()
+        .then(devices => {
+          const videoDevices = devices.filter(device => device.kind === 'videoinput');
+          const audioInDevices = devices.filter(device => device.kind === 'audioinput');
+          const audioOutDevices = devices.filter(device => device.kind === 'audiooutput');
+          if (!videoDevices.length) {
+            setVideoInputLabelText('No video devices')
+          }
+          if (!audioInDevices.length) {
+            setAudioInputLabelText('No input audio devices')
+          }
+          if (!audioOutDevices.length) {
+            setAudioOutputLabelText('No output audio devices')
+          }
+          setVideoInputDevices(videoDevices);
+          setAudioInputDevices(audioInDevices);
+          setAudioOutputDevices(audioOutDevices);
+          setDeviceId(videoDevices[0].deviceId);
+        })
+        .catch(err => {
+          console.log(err.name + ": " + err.message);
+        });
+      });
+    
     // socketRef.current = io.connect("http://localhost:8000");
     // // navigator.mediaDevices.getUserMedia({ video: {deviceId: { exact: '' }}, audio: true })
     // //   .then(stream => {    
@@ -171,8 +174,6 @@ const Room = (props) => {
   const connectStream = (videoConstraints) => {
     socketRef.current = io.connect("https://webrtc-node1.herokuapp.com");
     // socketRef.current = io.connect("http://localhost:8000");
-    // navigator.mediaDevices.getUserMedia({ video: {deviceId: { exact: '' }}, audio: true })
-    //   .then(stream => {    
     navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true })
       .then(stream => {
         userVideo.current.srcObject = stream;
