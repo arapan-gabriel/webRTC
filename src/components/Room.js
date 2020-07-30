@@ -83,8 +83,6 @@ const Room = (props) => {
   const roomID = props.match.params.roomID;
 
   useEffect(() => {
-    // socketRef.current = io.connect("http://localhost:8000");
-    socketRef.current = io.connect("https://webrtc-node1.herokuapp.com");
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
       .then(() => {
         navigator.mediaDevices.enumerateDevices()
@@ -109,24 +107,11 @@ const Room = (props) => {
           console.log(err.name + ": " + err.message);
         });
       });
-
-      socketRef.current.on("message-to-users", data => {
-        console.log('message-data', data);
-        console.log('messages: ', messages);
-        const messagesData = {
-          user: data.user,
-          message: data.message
-        };
-
-        console.log('messagesData:', messagesData);
-        
-        
-        setMessages(messages => [...messages, messagesData]);
-        console.log('messages2: ', messages);
-      });
   }, []);
 
   const connectStream = (videoConstraints) => {
+    // socketRef.current = io.connect("http://localhost:8000");
+    socketRef.current = io.connect("https://webrtc-node1.herokuapp.com");
     navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true })
       .then(stream => {
         userVideo.current.srcObject = stream;
@@ -154,12 +139,19 @@ const Room = (props) => {
             })
             setPeers(users => [...users, peer]);
           }
-
         });
 
         socketRef.current.on("receiving returned signal", payload => {
             const item = peersRef.current.find(p => p.peerID === payload.id);
             item.peer.signal(payload.signal);
+        });
+
+        socketRef.current.on("message-to-users", data => {
+          const messagesData = {
+            user: data.user,
+            message: data.message
+          };
+          setMessages(messages => [...messages, messagesData]);
         });
 
       });
@@ -228,6 +220,7 @@ const Room = (props) => {
   const handleBtnClick = (e) => {
     e.preventDefault();
     socketRef.current.emit("message", messageInput);
+    setMessageInput('');
   }
 
   const handleInputChange = (e) => {
