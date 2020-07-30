@@ -62,6 +62,8 @@ const videoConstraints = {
 
 const Room = (props) => {
   const [peers, setPeers] = useState([]);
+  const [messageInput, setMessageInput] = useState('');
+  const [messages, setMessages] = useState([{}]);
   const [videoInputLabelText, setVideoInputLabelText] = useState('Select video input device');
   const [audioInputLabelText, setAudioInputLabelText] = useState('Select audio input device');
   const [audioOutputLabelText, setAudioOutputLabelText] = useState('Select audio output device');
@@ -81,6 +83,7 @@ const Room = (props) => {
   const roomID = props.match.params.roomID;
 
   useEffect(() => {
+    socketRef.current = io.connect("http://localhost:8000");
     navigator.mediaDevices.getUserMedia({audio: true, video: true})
       .then(() => {
         navigator.mediaDevices.enumerateDevices()
@@ -104,6 +107,21 @@ const Room = (props) => {
         .catch(err => {
           console.log(err.name + ": " + err.message);
         });
+      });
+
+      socketRef.current.on("message-to-users", data => {
+        console.log('message-data', data);
+        console.log('messages: ', messages);
+        const messagesData = {
+          user: data.user,
+          message: data.message
+        };
+
+        console.log('messagesData:', messagesData);
+        
+        
+        setMessages(messages => [...messages, messagesData]);
+        console.log('messages2: ', messages);
       });
     
     // socketRef.current = io.connect("http://localhost:8000");
@@ -147,41 +165,43 @@ const Room = (props) => {
   }, []);
 
   const connectStream = (videoConstraints) => {
-    socketRef.current = io.connect("https://webrtc-node1.herokuapp.com");
+    // socketRef.current = io.connect("https://webrtc-node1.herokuapp.com");
     // socketRef.current = io.connect("http://localhost:8000");
     navigator.mediaDevices.getUserMedia({ video: videoConstraints, audio: true })
       .then(stream => {
         userVideo.current.srcObject = stream;
         socketRef.current.emit("join room", roomID);
         socketRef.current.on("all users", users => {
-            const peers = [];
-            users.forEach(userID => {
-                const peer = createPeer(userID, socketRef.current.id, stream);
-                peersRef.current.push({
-                    peerID: userID,
-                    peer,
-                })
-                peers.push(peer);
-            })
-            setPeers(peers);
+          const peers = [];
+          users.forEach(userID => {
+              const peer = createPeer(userID, socketRef.current.id, stream);
+              peersRef.current.push({
+                peerID: userID,
+                peer,
+              })
+              peers.push(peer);
+          })
+          setPeers(peers);
         });
 
         socketRef.current.on("user joined", payload => {
-            const item = peersRef.current.find(p => p.peerID === payload.callerID);
-            if(!item) {
-                const peer = addPeer(payload.signal, payload.callerID, stream);
-                peersRef.current.push({
-                peerID: payload.callerID,
-                peer,
-                })
-                setPeers(users => [...users, peer]);
-            }
+          const item = peersRef.current.find(p => p.peerID === payload.callerID);
+          if(!item) {
+            const peer = addPeer(payload.signal, payload.callerID, stream);
+            peersRef.current.push({
+            peerID: payload.callerID,
+            peer,
+            })
+            setPeers(users => [...users, peer]);
+          }
+
         });
 
         socketRef.current.on("receiving returned signal", payload => {
             const item = peersRef.current.find(p => p.peerID === payload.id);
             item.peer.signal(payload.signal);
         });
+
       });
   }
 
@@ -244,6 +264,16 @@ const Room = (props) => {
     setCheckeRear(event.target.checked);
     connectStream(videoConstraints)
   };
+
+  const handleBtnClick = (e) => {
+    e.preventDefault();
+    socketRef.current.emit("message", messageInput);
+  }
+
+  const handleInputChange = (e) => {
+    setMessageInput(e.target.value)
+  }
+
   return (
     <div className={classes.container}>
       <video
@@ -275,19 +305,43 @@ const Room = (props) => {
           inputLabelText={videoInputLabelText}
           selectedDevice={selectedDevices.videoInputDevice}
           handleChange={handleChangeSelectVideoIn}
-          /><br />
+        /><br />
         <CustomSelect
           devices={audioInputDevices}
           inputLabelText={audioInputLabelText}
           selectedDevice={selectedDevices.audioInputDevice}
           handleChange={handleChangeSelectAudioIn}
-          /><br />
+        /><br />
         <CustomSelect
           devices={audioOutputDevices}
           inputLabelText={audioOutputLabelText}
           selectedDevice={selectedDevices.audioOutputDevice}
           handleChange={handleChangeSelectAudioOut}
+        /><br />
+        <form id="chat-form">
+          <input
+            id="msg"
+            type="text"
+            placeholder="Enter message"
+            required
+            value={messageInput}
+            onChange={handleInputChange}
           />
+          <div>
+            {
+              messages.map((message, index) => {
+                return (
+                <div key={index}>
+                  User: {message.user}
+                  <br />
+                  Message: {message.message}
+                </div>
+                );
+              })
+            }
+          </div>
+          <button onClick={handleBtnClick}>Send</button>
+        </form>
         </div>
     </div>
   );
